@@ -10,6 +10,8 @@ import os
 import csv
 import statistics
 
+# The code below stores the absolute path of the csv file for both tickers. Later it is added to a list data structure.
+
 ticker1 = 'JNPR'
 input_dir = r'/home/ashwinak/Documents/Projects/Python/CS677/'
 ticker_file1 = os.path.join(input_dir, ticker1 + '.csv')
@@ -17,6 +19,8 @@ ticker_file1 = os.path.join(input_dir, ticker1 + '.csv')
 ticker2 = 'SPY'
 input_dir = r'/home/ashwinak/Documents/Projects/Python/CS677/'
 ticker_file2 = os.path.join(input_dir, ticker2 + '.csv')
+
+#The ticket_list is iterated to read both the csv file and read its contents.
 
 ticker_List = [ticker_file1, ticker_file2]
 for ticker in ticker_List:
@@ -32,7 +36,7 @@ for ticker in ticker_List:
         """    your code for assignment 1 goes here
         """
 
-
+# Function to compute returns when stocks bought on first day and sell on last day of the FY. i.e buy and hold strategy.
         def readCSVReturn(file, year):
             cash = 100
             NoOfShares = 0

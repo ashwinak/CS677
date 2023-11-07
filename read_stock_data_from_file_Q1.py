@@ -3,12 +3,14 @@
 Created on Mon Nov  5 14:37:29 2018
 
 @author: ashwinar
-this scripts reads your ticker file (e.g. MSFT.csv) and
+this scripts reads your ticker file (e.g. JNPR.csv) and
 constructs a list of lines
 """
 import os
 import csv
 import statistics
+
+# The code below stores the absolute path of the csv file for both tickers. Later it is added to a list data structure.
 
 ticker1 = 'JNPR'
 input_dir = r'/home/ashwinak/Documents/Projects/Python/CS677/'
@@ -18,6 +20,7 @@ ticker2 = 'SPY'
 input_dir = r'/home/ashwinak/Documents/Projects/Python/CS677/'
 ticker_file2 = os.path.join(input_dir, ticker2 + '.csv')
 
+#The ticket_list is iterated to read both the csv file and read its contents.
 ticker_List = [ticker_file1, ticker_file2]
 for ticker in ticker_List:
     try:
@@ -35,16 +38,18 @@ for ticker in ticker_List:
         Total_Positive_Return_Days = []
         Total_Up_Days = []
         Total_Down_Days = []
+
+#function to compute mean
         def computeMean(returns):
             mean = statistics.mean(returns)
             return round(mean, 6)
 
-
+#function to compute standard deviation
         def computeSTD(returns):
             std = statistics.stdev(returns)
             return round(std, 6)
 
-
+# Function to read full CSV file.
         def readCSVReturn(file, year, day):
             with open(file, 'r') as returnAll:
                 readerReturn = csv.reader(returnAll)
@@ -58,7 +63,7 @@ for ticker in ticker_List:
             print("Standard Deviation of returns for " + str(day) + " from FY " + str(year))
             print(computeSTD(return_listAll))
 
-
+# Function to read CSV file with rows where return value is negative.
         def readCSVNegativeReturn(file, year, day):
             with open(file, 'r') as returnNegative:
                 readerNegative = csv.reader(returnNegative)
@@ -77,6 +82,7 @@ for ticker in ticker_List:
             print("Standard Deviation of Negative returns for " + str(day) + " from FY " + str(year))
             print(computeSTD(return_listNegative))
 
+# Function to read CSV file with rows where return value is positive.
 
         def readCSVPositiveReturn(file, year, day):
             with open(file, 'r') as returnPositive:
@@ -97,7 +103,7 @@ for ticker in ticker_List:
             print("Standard Deviation of Positive returns for " + str(day) + " from FY " + str(year))
             print(computeSTD(return_listPositive))
 
-
+# Three for loops to iterate over all years and call the specific function i.e. to readfullCSV , read CSV with negative returns, read CSV with positive returns.
         years = [2016, 2017, 2018, 2019, 2020]
         for yr in years:
             print("#### Year is " + str(yr))
