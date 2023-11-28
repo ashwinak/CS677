@@ -69,10 +69,10 @@ correlation_matrix_df1 = df_1.corr().round(2)#.fillna(1)
 
 # code for correlation matrices with file save
 sns.heatmap(correlation_matrix_df0, annot=True, vmin=-1,vmax=1,cmap="coolwarm", fmt=".2f",linewidths=1, linecolor='black',annot_kws={"size": 8})
-plt.savefig("M0_surviving_patients.png",bbox_inches='tight',dpi=300)
+plt.savefig("M0_surviving_patients.pdf",bbox_inches='tight',dpi=300)
 plt.figure()
 sns.heatmap(correlation_matrix_df1, annot=True, vmin=-1,vmax=1,cmap="coolwarm", fmt=".2f",linewidths=1, linecolor='black',annot_kws={"size": 8})
-plt.savefig("M1_surviving_patients.png",bbox_inches='tight', dpi=300)
+plt.savefig("M1_surviving_patients.pdf",bbox_inches='tight', dpi=300)
 
 
 ## Code to find various high and low correlation matrix feature pairs.
