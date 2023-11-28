@@ -71,8 +71,8 @@ def SimpleLinearRegression(DEATH_EVENT):
     y_predict = LinearRegressModel.predict(X_test)
 
     # (d) plot (if possible) predicted and actual values in Xtest
-    plt.scatter(X_test, Y_test, color="blue", marker="o", s=100)
-    plt.plot(X_test, y_predict, color="green", lw=3)
+    plt.scatter(X_test, Y_test, color="blue")
+    plt.plot(X_test, y_predict, color="blue", lw=3)
     plt.xlabel('X_test')
     plt.ylabel('Y_test')
     plt.title(title)
