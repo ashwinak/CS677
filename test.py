@@ -78,57 +78,116 @@
 # # plt.legend()
 # # plt.show()
 
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
-from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
-# # Example data (replace this with your actual dataset)
-# X, y = make_classification(n_samples=100, n_features=4, n_informative=2, n_redundant=0, random_state=42)
+# import seaborn as sns
+# import matplotlib.pyplot as plt
+# import pandas as pd
+# from sklearn.datasets import make_classification
+# from sklearn.model_selection import train_test_split
+# # # Example data (replace this with your actual dataset)
+# # X, y = make_classification(n_samples=100, n_features=4, n_informative=2, n_redundant=0, random_state=42)
+# #
+# # # Split the data into training and testing sets
+# # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# #
+# # # Combine X_train and y_train into a DataFrame for easier plotting
+# # train_data = pd.DataFrame(data=X_train, columns=[f'feature_{i}' for i in range(X_train.shape[1])])
+# # train_data['class'] = y_train
+# #
+# # # Use Seaborn pairplot with hue to plot pairwise relationships for class 0 and class 1
+# # sns.pairplot(train_data, hue='class', markers=['o', 's'])
+# # plt.show()
 #
-# # Split the data into training and testing sets
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 #
-# # Combine X_train and y_train into a DataFrame for easier plotting
-# train_data = pd.DataFrame(data=X_train, columns=[f'feature_{i}' for i in range(X_train.shape[1])])
-# train_data['class'] = y_train
+# import pandas as pd
+# import numpy as np
+# from sklearn.neighbors import KNeighborsClassifier
+# from sklearn.preprocessing import LabelEncoder
 #
-# # Use Seaborn pairplot with hue to plot pairwise relationships for class 0 and class 1
-# sns.pairplot(train_data, hue='class', markers=['o', 's'])
-# plt.show()
+# # data = pd. DataFrame (
+# #     {'Day': [1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10] ,
+# #      'Weather':['sunny','rainy','sunny','rainy','sunny','overcast',
+# #                 'sunny','overcast','rainy','rainy'],
+# #      'Temperature': ['hot','mild','cold','cold','cold','mild',
+# #                      'hot','hot','hot','mild'],
+# #      'Wind': ['low','high','low','high','high','low','low',
+# #               'high','high','low'],
+# #      'Play': ['no','yes','yes','no','yes','yes','yes',
+# #               'yes','no','yes']},
+# #     columns = ['Day','Weather','Temperature','Wind','Play']
+# # )
+# # input_data = data [['Weather', 'Temperature', 'Wind']]
+# # dummies = [pd.get_dummies(data [c]) for c in input_data.columns ]
+# #
+# #
+# # binary_data = pd.concat(dummies , axis =1)
+# # X = binary_data[0:10].values
+# # le = LabelEncoder ()
+# # Y = le.fit_transform(data['Play'].values)
+# # print(X)
+# # print("blah")
+# # print(Y)
+# # knn_classifier = KNeighborsClassifier (n_neighbors = 3)  # 3 neighbor
+# # knn_classifier.fit (X,Y)
+# # arr = np.asarray([[0 ,0 ,1 ,1 ,0 ,0 ,0 ,1]])
+# # # new_instance = np.asmatrix(arr)
+# # prediction = knn_classifier.predict(arr)
+# # print(prediction)
+#
+# import numpy as np
+# from sklearn . linear_model import LinearRegression
+# X = np.array([[1,1],[1,2],[2,2],[2,3]])
+# y = np.dot(X,np.array([1,2]))+3  #[3 5 6 8]
+# print(y)
 
 
 import pandas as pd
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import LabelEncoder
-
-data = pd. DataFrame (
-    {'Day': [1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10] ,
-     'Weather':['sunny','rainy','sunny','rainy','sunny','overcast',
-                'sunny','overcast','rainy','rainy'],
-     'Temperature': ['hot','mild','cold','cold','cold','mild',
-                     'hot','hot','hot','mild'],
-     'Wind': ['low','high','low','high','high','low','low',
-              'high','high','low'],
-     'Play': ['no','yes','yes','no','yes','yes','yes',
-              'yes','no','yes']},
-    columns = ['Day','Weather','Temperature','Wind','Play']
-)
-input_data = data [['Weather', 'Temperature', 'Wind']]
-dummies = [pd.get_dummies(data [c]) for c in input_data.columns ]
+import matplotlib.pyplot as plt
+import os
+import csv
+input_dir = os.getcwd()
+clinicalRecords = os.path.join(input_dir,'heart_failure_clinical_records_dataset.csv')
+df_clinicalRecords = pd.read_csv(clinicalRecords)
+required_features = ['creatinine_phosphokinase','platelets','DEATH_EVENT']
+df_clinicalRecords_filtered = df_clinicalRecords.drop(df_clinicalRecords.columns.difference(required_features), axis=1)
+df_0 = df_clinicalRecords_filtered[df_clinicalRecords_filtered['DEATH_EVENT'] == 0]#.values
+df_1 = df_clinicalRecords_filtered[df_clinicalRecords_filtered['DEATH_EVENT'] == 1]#.values
+X = df_0[['creatinine_phosphokinase']] # X is a matrix of 2d array.
+y = df_0[['platelets']] #Y dependent variable can be 1d array.
+title = 'Quadratic Linear Regression for surviving patients'
 
 
-binary_data = pd.concat(dummies , axis =1)
-X = binary_data[0:10].values
-le = LabelEncoder ()
-Y = le.fit_transform(data['Play'].values)
-print(X)
-print("blah")
-print(Y)
-knn_classifier = KNeighborsClassifier (n_neighbors = 3)  # 3 neighbor
-knn_classifier.fit (X,Y)
-arr = np.asarray([[0 ,0 ,1 ,1 ,0 ,0 ,0 ,1]])
-# new_instance = np.asmatrix(arr)
-prediction = knn_classifier.predict(arr)
-print(prediction)
+# Create a sample DataFrame
+# data = {'X': [1, 2, 3, 4, 5],
+#         'Y': [2, 4, 5, 4, 5]}
+
+X = df_0['creatinine_phosphokinase'].values
+Y = df_0['platelets'].values
+data = {'X': X,
+        'Y': Y}
+
+
+df = pd.DataFrame(data)
+
+# Extract X and Y values
+x = df['X'].values
+y = df['Y'].values
+
+# Fit a quadratic model (degree=2)
+coefficients = np.polyfit(x, y, deg=2)
+
+# Create a polynomial function using the coefficients
+poly_func = np.poly1d(coefficients)
+
+# Generate points along the curve for smooth visualization
+x_smooth = np.linspace(x.min(), x.max(), 100)
+y_smooth = poly_func(x_smooth)
+
+# Plot the original data points and the quadratic polynomial curve
+plt.scatter(x, y, color='black', label='Data Points')
+plt.plot(x_smooth, y_smooth, color='blue', label='Quadratic Polynomial Curve', linewidth=3)
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.title('Quadratic Polynomial Regression')
+plt.legend()
+plt.show()
