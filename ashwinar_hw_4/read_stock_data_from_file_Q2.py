@@ -76,8 +76,8 @@ def SimpleLinearRegression(DEATH_EVENT):
     plt.xlabel('X_test')
     plt.ylabel('Y_test')
     plt.title(title)
-    plt.show()
     plt.savefig(title+ ".pdf",bbox_inches='tight',dpi=300)
+    plt.show()
 
     # (e) compute (and print) the corresponding loss function
     sse = np.sum((Y_test - y_predict) ** 2, axis=0)
@@ -144,9 +144,8 @@ def QuadraticLinearRegression(DEATH_EVENT):
     plt.xlabel('X')
     plt.ylabel('Y')
     plt.title(title)
-    plt.show()
     plt.savefig(title+ ".pdf",bbox_inches='tight',dpi=300)
-
+    plt.show()
 
     # (e) compute (and print) the corresponding loss function
     sse = np.sum((Y_test - y_predict) ** 2, axis=0)
@@ -205,13 +204,12 @@ def cubicPolynomialModel(DEATH_EVENT):
     plt.xlabel('x_smooth')
     plt.ylabel('y_smooth')
     plt.title(title)
-    plt.show()
     plt.savefig(title+ ".pdf",bbox_inches='tight',dpi=300)
+    plt.show()
 
     # (e) compute (and print) the corresponding loss function
     sse = np.sum((Y_test - y_predict) ** 2, axis=0)
     print(" SSE (Sum of Squared Errors) is :", sse)
-
 
 cubicPolynomialModel(0)
 cubicPolynomialModel(1)
@@ -264,17 +262,15 @@ def GLM_logX(DEATH_EVENT):
     plt.xlabel('x_smooth')
     plt.ylabel('y_smooth')
     plt.title(title)
-    plt.show()
     plt.savefig(title+ ".pdf",bbox_inches='tight',dpi=300)
+    plt.show()
 
     # (e) compute (and print) the corresponding loss function
     sse = np.sum((Y_test - y_predict) ** 2, axis=0)
     print(" SSE (Sum of Squared Errors) is :", sse)
 
-
 GLM_logX(0)
 GLM_logX(1)
-
 
 def GLM_logXY(DEATH_EVENT):
     input_dir = os.getcwd()
@@ -326,8 +322,8 @@ def GLM_logXY(DEATH_EVENT):
     plt.xlabel('x_smooth')
     plt.ylabel('y_smooth')
     plt.title(title)
-    plt.show()
     plt.savefig(title+ ".pdf",bbox_inches='tight',dpi=300)
+    plt.show()
 
     # (e) compute (and print) the corresponding loss function
     sse = np.sum((Y_test - y_predict) ** 2, axis=0)
