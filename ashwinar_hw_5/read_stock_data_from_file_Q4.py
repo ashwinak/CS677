@@ -26,19 +26,19 @@ Use Decision Tree to answer these questions:
 """
 
 import os
-import csv
-import statistics
+# import csv
+# import statistics
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
+# import seaborn as sns
+# import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 
 import matplotlib.pyplot as plt
-import xlrd
+# import xlrd
 
 
 ## This is code for Q4
@@ -117,33 +117,3 @@ plt.title('Error Rates for Different estimator and depth Combinations')
 
 # Show the plot
 plt.show()
-
-
-
-
-
-
-# print(err_rate)
-# print(estimator)
-# # plt.plot(estimator, err_rate, color="blue",  label='estimator', marker='o')
-# # plt.plot(depth, err_rate, color="green", label='depth', marker='x')
-#
-# plt.scatter(estimator, err_rate, label='estimator', color='green', marker='o')
-# plt.scatter(depth, err_rate, label='depth', color='blue', marker='x')
-#
-# # for i, (x, y) in enumerate(zip(estimator, err_rate)):
-# #     # plt.annotate(f'Point {i+1}', (x, y), textcoords="offset points", xytext=(5,5), ha='right')
-# #     plt.annotate(depth, (x, y), textcoords="offset points", xytext=(5,5), ha='right')
-#
-#
-# # # Show the plot
-# # plt.show()
-#
-# plt.xlabel('n_estimators')
-# plt.ylabel('Error Rate')
-# plt.legend()
-#
-# # plt.xlim(min(estimator_depth) - 1, max(err_rate) + 1)
-# # plt.title(title)
-# # plt.savefig(title+ ".pdf",bbox_inches='tight',dpi=300)
-# plt.show()
