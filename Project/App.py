@@ -4,7 +4,7 @@ Created on Mon Dec  5 14:37:29 2018
 @author: ashwinar@bu.edu
 
 This is a machine learning algorithm implemenation to detect DDoS attacks based on the sflow data received from the network equipement.
-Various ML algorithms are compared against its accuracy.
+Various ML algorithms are compared against its accuracy for accurate prediction of DDoS attacks.
 
 """
 """
