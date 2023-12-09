@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec  5 14:37:29 2018
+Created on Mon Dec  5, 2023.
 @author: ashwinar@bu.edu
 
 This is a machine learning algorithm implemenation to detect DDoS attacks based on the sflow data received from the network equipement.
@@ -19,21 +19,27 @@ Various ML algorithms are compared against its accuracy.
 """
 
 import os
+import copy
 import pandas as pd
 import numpy as np
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-import copy
-
-# import matplotlib.pyplot as plt
+from sklearn.naive_bayes import MultinomialNB
+from sklearn import tree
+from sklearn.metrics import accuracy_score,confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 # from sklearn.preprocessing import PolynomialFeatures
 # from sklearn.preprocessing import FunctionTransformer
-# import warnings
-# warnings.filterwarnings("ignore", category=UserWarning)
-# import seaborn as sns
 
 
-# A total of 225K rows are part of this data set. For this project, only 200 rows will be used per flow type to train the model.
+
+# A total of 225K rows are part of this data set. For this project, only 1000 rows will be used per flow type to train the model.
 # flow type 1 : BENIGN : 1000
 # flow type 2 : Ddos : 1000
 
@@ -94,11 +100,18 @@ def trainTestLogisticRegression(dataFrame,new_ClassLabel,feature_list_toDrop):
     #Data set 50/50 split between train and test
     X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
 
+    # Data preprocessing using standard scalar before fitting into KNN model.
+    # print(X_test)
+    scalar = StandardScaler()
+    X_train = scalar.fit_transform(X_train) # For training data to both learn parameters and apply transformation.
+    X_test = scalar.transform(X_test) # For applying learned transformation to the new data set.
+
     logRegression = LogisticRegression()
     logRegression.fit(X_train,Y_train.ravel())
     predictions = logRegression.predict(X_test)
-    print("Total columns used for training is: ", len(dataFrame.columns))
-    print("     Accuracy from Logistic regression model is: " + str(round(np.mean(predictions == Y_test.ravel())*100,2)))
+    print("Total features used for training is: ", len(dataFrame.columns))
+    accuracy = accuracy_score(Y_test, predictions)
+    print(f"    Accuracy from Logistic regression model is: {accuracy * 100 :.2f}%")
 
 def applyCorrelationMatrix(dataFrame,new_ClassLabel,feature_list_toDrop,threshold):
     """
@@ -125,14 +138,167 @@ def applyCorrelationMatrix(dataFrame,new_ClassLabel,feature_list_toDrop,threshol
     for col1, col2 in columns_to_drop:
         if col2 in df_full.columns:
             df_full.drop(col2, axis=1, inplace=True)
-    print("\nDropping high positive Correlated features...")
+    print("\n#### Dropping high positive Correlated features")
     trainTestLogisticRegression(df_full,new_ClassLabel,feature_list_toDrop)
 
-if __name__ == "__main__":
-    df_DDoS_filtered = dataPreProcessing(fileName,'Label','BENIGN','DDoS',new_ClassLabel,1000)
-    df_full = copy.copy(df_DDoS_filtered)
-    feature_list_toDrop = ['Label','Flow ID','Source IP','Destination IP','Timestamp']
-    trainTestLogisticRegression(df_DDoS_filtered,'Class_Label',feature_list_toDrop)
-    applyCorrelationMatrix(df_full,new_ClassLabel,feature_list_toDrop,0.8)
+def applyNaiveBayes(dataFrame,new_ClassLabel,feature_list_toDrop):
+    """
+    This function takes dataframe obtained from dataPreProcessing function, new_classLabel value and feature list to drop if they cannot be
+    passed to ML for training. Reasons for dropping features could be if the values are strings or float values.
 
+    Parameters:
+    - dataFrame : pre processed dataframe returned from previous function.
+    - new_ClassLabel : This is the new class label computed based on values from class_features column.
+    - feature_list_toDrop : List of features to drop if they cannot be passed to ML training model.
+
+    Returns:
+    Accuracy of the training model.
+    """
+    y = dataFrame[[new_ClassLabel]].values
+    dataFrame.drop([new_ClassLabel,*feature_list_toDrop], axis=1, inplace=True)
+    X = dataFrame.values
+
+    #Data set 50/50 split between train and test
+    X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
+
+    # Data preprocessing using standard scalar before fitting into KNN model.
+    # print(X_test)
+    scalar = StandardScaler()
+    X_train = scalar.fit_transform(X_train) # For training data to both learn parameters and apply transformation.
+    X_test = scalar.transform(X_test) # For applying learned transformation to the new data set.
+
+    clf = tree.DecisionTreeClassifier(criterion ='entropy')
+    clf = clf.fit(X_train,Y_train.ravel())
+    prediction = clf.predict(X_test)
+    # prediction = NB_Classifier.predict(X_test)
+    # print(prediction)
+    accuracy = accuracy_score(Y_test, prediction)
+    print("\nTotal features used for training is: ", len(dataFrame.columns))
+    print(f"    Accuracy of the NB Decision Tree Classifier is: {accuracy * 100 :.2f}%")
+
+def applyKNN(dataFrame,new_ClassLabel,feature_list_toDrop,neighbor):
+    """
+    This function takes dataframe obtained from dataPreProcessing function, new_classLabel value and feature list to drop if they cannot be
+    passed to ML for training. Reasons for dropping features could be if the values are strings or float values.
+
+    Parameters:
+    - dataFrame : pre processed dataframe returned from previous function.
+    - new_ClassLabel : This is the new class label computed based on values from class_features column.
+    - feature_list_toDrop : List of features to drop if they cannot be passed to ML training model.
+    - neighbor : hyperparameter: range of K neighbors to train the model.
+
+    Returns:
+    Accuracy of the training model for various n values.
+    """
+
+    y = dataFrame[[new_ClassLabel]].values
+    dataFrame.drop([new_ClassLabel,*feature_list_toDrop], axis=1, inplace=True)
+    X = dataFrame.values
+
+    #Data set 50/50 split between train and test
+    X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
+
+    # Data preprocessing using standard scalar before fitting into KNN model.
+    # print(X_test)
+    scalar = StandardScaler()
+    X_train = scalar.fit_transform(X_train) # For training data to both learn parameters and apply transformation.
+    X_test = scalar.transform(X_test) # For applying learned transformation to the new data set.
+
+    xaxis = []
+    yaxis = []
+    print("\nTotal features used for training is: ", len(dataFrame.columns))
+    for i in range(1,neighbor,1):
+        knn = KNeighborsClassifier(n_neighbors=i)
+        knn.fit(X_train,Y_train.ravel()) # Used to train the KNN model based on different neighbor values.
+        xaxis.append(i)
+        predictions = knn.predict(X_test) # used to make predictions on new data.
+        yaxis.append(round(np.mean(predictions == Y_test.ravel())*100,2))
+        accuracy = accuracy_score(Y_test, predictions)
+        #compare predictions from the KNN model against Y_test output.
+        print("     Accuracy from KNN model for k=" + str(i) + ": "+ f"{accuracy * 100 :.2f}%")
+
+    print("     The best accuracy seen with KNN is " , f"{max(yaxis)}%")
+
+    # Plot graph for accuracy
+    plt.plot(xaxis,yaxis,label='KNN Accuracy')
+    plt.xlabel("K-Value")
+    plt.ylabel("Accuracy")
+    plt.title("KNN Model classifier")
+    plt.show()
+
+def applyRandomForest(dataFrame,new_ClassLabel,feature_list_toDrop,subtree,max_depth):
+    """
+    This function takes dataframe obtained from dataPreProcessing function, new_classLabel value and feature list to drop if they cannot be
+    passed to ML for training. Reasons for dropping features could be if the values are strings or float values.
+
+    Parameters:
+    - dataFrame : pre processed dataframe returned from previous function.
+    - new_ClassLabel : This is the new class label computed based on values from class_features column.
+    - feature_list_toDrop : List of features to drop if they cannot be passed to ML training model.
+    - neighbor : range of K neighbors to train the model.
+    - subtree : hyperparameter : N - number of (sub)trees to use and
+    - max_depth: hyperparameter : d - max depth of each subtree
+
+    Returns:
+    Accuracy of the training model for various n and d values along with confusion matrices for each combination of n and d
+    """
+
+    y = dataFrame[[new_ClassLabel]].values
+    dataFrame.drop([new_ClassLabel,*feature_list_toDrop], axis=1, inplace=True)
+    X = dataFrame.values
+
+    #Data set 50/50 split between train and test
+    X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
+
+    # Data preprocessing using standard scalar before fitting into KNN model.
+    # print(X_test)
+    scalar = StandardScaler()
+    X_train = scalar.fit_transform(X_train) # For training data to both learn parameters and apply transformation.
+    X_test = scalar.transform(X_test) # For applying learned transformation to the new data set.
+
+    err_rate = []
+    estimator = []
+    depth = []
+    for n in range (1,subtree,1):
+        for d in range (1,max_depth):
+            model = RandomForestClassifier(n_estimators =n,max_depth =d,criterion ='entropy')
+            model.fit (X_train, Y_train.ravel())
+            prediction = model.predict(X_test)
+            accuracy = accuracy_score(Y_test, prediction)
+            print("\nFor n=" + str(n) + " and d=" + str(d))
+            print(f"    Accuracy of Randmom Forest Classifier with : {accuracy * 100 :.2f}%")
+            conf_matrix = confusion_matrix(Y_test, prediction)
+            conf_matrix_df = pd.DataFrame(conf_matrix, index=['Actual Positive', 'Actual Negative'], columns=['Predicted Positive', 'Predicted Negative'])
+            print("Confusion Matrix:")
+            TP = conf_matrix[[0],[0]][0]
+            FP = conf_matrix[[0],[1]][0]
+            TN = conf_matrix[[1],[1]][0]
+            FN = conf_matrix[[1],[0]][0]
+            print("    True Positive is ", TP)
+            print("    False Positive is ", FP)
+            print("    False Negative is ", FN)
+            print("    True Negative is ", TN)
+            print("    True Positive Rate is : ", round(TP/(TP+FN),2)*100)
+            print("    True Negative Rate is : ", round(TN/(TN+FP),2)*100)
+            # Compute and print the error rate
+            error_rate = (conf_matrix[0, 1] + conf_matrix[1, 0]) / len(Y_test)
+            print(f"Error Rate: {error_rate:.2%}")
+            err_rate.append([error_rate*100])
+            estimator.append(n)
+            depth.append(d)
+
+if __name__ == "__main__":
+    df_DDoS_filtered = dataPreProcessing(fileName,'Label','BENIGN','DDoS',new_ClassLabel,2000)
+    df_full_Corr = copy.copy(df_DDoS_filtered)
+    df_full_NB = copy.copy(df_DDoS_filtered)
+    df_full_KNN = copy.copy(df_DDoS_filtered)
+    df_full_RandomForest = copy.copy(df_DDoS_filtered)
+    feature_list_toDrop = ['Label','Flow ID','Source IP','Destination IP','Timestamp']
+
+    # Applying various training models and comparing its accuracy.
+    trainTestLogisticRegression(df_DDoS_filtered,'Class_Label',feature_list_toDrop) #Model logistic regression
+    applyCorrelationMatrix(df_full_Corr,new_ClassLabel,feature_list_toDrop,0.8) # Apply correlation matrix, remove closest features and compute accuracy of logistic regression.
+    applyNaiveBayes(df_full_NB,new_ClassLabel,feature_list_toDrop) # Model Naive bayes
+    applyKNN(df_full_KNN,new_ClassLabel,feature_list_toDrop,10) # Model KNN
+    applyRandomForest(df_full_RandomForest,new_ClassLabel,feature_list_toDrop,10,6) # Model RandomForest
 
