@@ -26,102 +26,109 @@ from sklearn.preprocessing import FunctionTransformer
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 import seaborn as sns
+import copy
 
 
 # A total of 225K rows are part of this data set. For this project, only 200 rows will be used per flow type to train the model.
 # flow type 1 : BENIGN : 1000
 # flow type 2 : Ddos : 1000
 
-input_dir = os.getcwd()
-DDoS_Data = os.path.join(input_dir, 'DDOS_Capture.csv')
-df_DDoS = pd.read_csv(DDoS_Data)
+fileName = "DDOS_Capture.csv"
+new_ClassLabel = 'Class_Label'
 
-# Removing leading or trailing spaces.
-df_DDoS = df_DDoS.rename(columns=lambda x: x.strip())
+def dataPreProcessing(fileName,class_feature, class0_Label,class1_Label,new_ClassLabel,sample_count=len(pd.read_csv(fileName))):
+    """
+    This function takes input file name, class_feature column, existing class labels, new computed class label  and length of sample_count.
 
-condition_Benign = df_DDoS['Label'] == 'BENIGN'
-condition_DDoS  = df_DDoS['Label'] == 'DDoS'
+    Parameters:
+    - fileName (str): Name of the input file in current working directory.
+    - class_feature : This is called the dependent variable or y column in data pre processing.
+    - class0_Label : The values in class features is expected to be in binary. This label maps to one of the binary value.
+    - class1_Label : The values in class features is expected to be in binary. This label maps to one of the binary value.
+    - new_ClassLabel : This is the new class label computed based on values from class_features column.
+    - sample_count : This is the number of samples that will be filtered and stored in a dataframe. IOW, the number of rows from the input file.
 
-random_rows_Benign = df_DDoS[condition_Benign].sample(n=1000, random_state=42)
-random_rows_DDoS = df_DDoS[condition_DDoS].sample(n=1000, random_state=42)
-df_DDoS_filtered = pd.concat([random_rows_Benign, random_rows_DDoS], ignore_index=True)
-df_DDoS_filtered_Drop_Correlated = pd.concat([random_rows_Benign, random_rows_DDoS], ignore_index=True)
+    Returns:
+    dataframe: This function returns the the data frame post processing.
+    """
 
-df_DDoS_filtered.drop(['Fwd Header Length.1'], axis=1, inplace=True)
-df_DDoS_filtered_Drop_Correlated.drop(['Fwd Header Length.1'], axis=1, inplace=True)
+    input_dir = os.getcwd()
+    DDoS_Data = os.path.join(input_dir, fileName)
+    df_DDoS = pd.read_csv(DDoS_Data)
 
-df_DDoS_filtered.to_csv('DDOS_Capture_Filtered.csv',index=False)
+    # Removing leading or trailing spaces.
+    df_DDoS = df_DDoS.rename(columns=lambda x: x.strip())
+    condition_Benign = df_DDoS[class_feature] == class0_Label
+    condition_DDoS  = df_DDoS[class_feature] == class1_Label
+    random_rows_class0_Label = df_DDoS[condition_Benign].sample(n=sample_count, random_state=42)
+    random_rows_class1_Label = df_DDoS[condition_DDoS].sample(n=sample_count, random_state=42)
+    df_DDoS_filtered = pd.concat([random_rows_class0_Label, random_rows_class1_Label], ignore_index=True)
+    df_DDoS_filtered.to_csv('DDOS_Capture_Filtered.csv',index=False)
 
-# Removing leading or trailing spaces.
-# df_DDoS_filtered = df_DDoS_filtered.rename(columns=lambda x: x.strip())
-
-# df_DDoS_filtered_Drop_Correlated = df_DDoS_filtered_Drop_Correlated.rename(columns=lambda x: x.strip())
-# df_DDoS_filtered_Drop_Correlated.columns = df_DDoS_filtered_Drop_Correlated.columns.str.strip('.123').str.rstrip('.123').str.lstrip('.123')
-
-# create a new class label for DDOS and Benign flows. Convert text labels to integer labels.
-df_DDoS_filtered['Class_Label'] = df_DDoS_filtered['Label'].apply(lambda x: 0 if x =='BENIGN' else 1)
-
-# print(df_DDoS_filtered)
-
-# Selecting columns for training. There are a total of 86 features available. All 86 except dependent variable will be used in the training set.
-
-y = df_DDoS_filtered[['Class_Label']].values
-df_DDoS_filtered.drop(['Class_Label', 'Label','Flow ID','Source IP','Destination IP','Timestamp'], axis=1, inplace=True)
-X = df_DDoS_filtered.values
-
-#Data set 50/50 split between train and test.l
-X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
-
-logRegression = LogisticRegression()
-logRegression.fit(X_train,Y_train.ravel())
-predictions = logRegression.predict(X_test)
-print("Accuracy from Logistic regression model is: " + str(round(np.mean(predictions == Y_test.ravel())*100,2)))
-
-# code for correlation matrices with file save
-sns.heatmap(df_DDoS_filtered.corr(),annot=True, vmin=-2,vmax=3,cmap="coolwarm", fmt=".2f",linewidths=1, linecolor='black',annot_kws={"size": 10})
-plt.title("DF")
-plt.figure()
-# sns.heatmap(correlation_matrix_df1, annot=True, vmin=-2,vmax=3,cmap="coolwarm", fmt=".2f",linewidths=1, linecolor='black',annot_kws={"size": 10})
-# plt.title("DF1")
-# plt.show()
-
-
-df_DDoS_filtered_Drop_Correlated.drop(['Label','Flow ID','Source IP','Destination IP','Timestamp'], axis=1, inplace=True)
-
-# Based on the correlation matrices, the following features are deleted.
-
-threshold = 0.8
-
-# Identify columns to drop based on the correlation matrix
-columns_to_drop = np.where(np.abs((df_DDoS_filtered_Drop_Correlated.corr()) > threshold))
-
-columns_to_drop = [(df_DDoS_filtered_Drop_Correlated.columns[x], df_DDoS_filtered_Drop_Correlated.columns[y])
-                   for x, y in zip(*columns_to_drop)
-                   if x != y and x < y]
-# Drop the identified columns
-
-for col1, col2 in columns_to_drop:
-    if col2 in df_DDoS_filtered_Drop_Correlated.columns:
-        df_DDoS_filtered_Drop_Correlated.drop(col2, axis=1, inplace=True)
-
-# print(df_DDoS_filtered_Drop_Correlated.columns)
-
-# After dropping highly correlated features, the total number of features is reduced to 41.
-
+    # create a new class label for DDOS and Benign flows. Convert text labels to integer labels.
+    df_DDoS_filtered[new_ClassLabel] = df_DDoS_filtered[class_feature].apply(lambda x: 0 if x =='BENIGN' else 1)
+    return df_DDoS_filtered
 
 # Selecting columns for training. There are a total of 86 features available. All 86 except dependent variable will be used in the training set.
+def trainTestLogisticRegression(dataFrame,new_ClassLabel,feature_list_toDrop):
+    """
+    This function takes dataframe obtained from dataPreProcessing function, new_classLabel value and feature list to drop if they cannot be
+    passed to ML for training. Reasons for dropping features could be if the values are strings or float values.
 
-# y = df_DDoS_filtered[['Class_Label']].values
-# df_DDoS_filtered.drop(['Class_Label', 'Label','Flow ID','Source IP','Destination IP','Timestamp'], axis=1, inplace=True)
-X = df_DDoS_filtered_Drop_Correlated.values
+    Parameters:
+    - dataFrame : pre processed dataframe returned from previous function.
+    - new_ClassLabel : This is the new class label computed based on values from class_features column.
+    - feature_list_toDrop : List of features to drop if they cannot be passed to ML training model.
 
-#Data set 50/50 split between train and test.l
-X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
+    Returns:
+    Accuracy of the training model.
+    """
+    y = dataFrame[[new_ClassLabel]].values
+    dataFrame.drop([new_ClassLabel,*feature_list_toDrop], axis=1, inplace=True)
+    X = dataFrame.values
 
-logRegression = LogisticRegression()
-logRegression.fit(X_train,Y_train.ravel())
-predictions = logRegression.predict(X_test)
-print("Accuracy from Logistic regression model after removing highly correlated features : " + str(round(np.mean(predictions == Y_test.ravel())*100,2)))
+    #Data set 50/50 split between train and test
+    X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
 
+    logRegression = LogisticRegression()
+    logRegression.fit(X_train,Y_train.ravel())
+    predictions = logRegression.predict(X_test)
+    print("Total columns used for training is: ", len(dataFrame.columns))
+    print("     Accuracy from Logistic regression model is: " + str(round(np.mean(predictions == Y_test.ravel())*100,2)))
+
+def applyCorrelationMatrix(dataFrame,new_ClassLabel,feature_list_toDrop,threshold):
+    """
+    This function takes dataframe obtained from dataPreProcessing function, new_classLabel value and feature list to drop if they cannot be
+    passed to ML for training. Reasons for dropping features could be if the values are strings or float values.
+    This function also takes the threshold value i.e the value that can be used to drop highly correlated features in a given data frame.
+
+    Parameters:
+    - dataFrame : pre processed dataframe returned from previous function.
+    - new_ClassLabel : This is the new class label computed based on values from class_features column.
+    - feature_list_toDrop : List of features to drop if they cannot be passed to ML training model.
+
+    Returns:
+    Accuracy of the training model after dropping highly correlated features.
+    """
+    df_full = copy.copy(dataFrame)
+    dataFrame.drop([new_ClassLabel,*feature_list_toDrop], axis=1, inplace=True)
+    # Based on the correlation matrices, the following features are deleted.
+    columns_to_drop = np.where(np.abs((dataFrame.corr()) > threshold))
+    columns_to_drop = [(dataFrame.columns[x], dataFrame.columns[y])
+                       for x, y in zip(*columns_to_drop)
+                       if x != y and x < y]
+    # Drop the identified columns
+    for col1, col2 in columns_to_drop:
+        if col2 in df_full.columns:
+            df_full.drop(col2, axis=1, inplace=True)
+    print("\nDropping high positive Correlated features...")
+    trainTestLogisticRegression(df_full,new_ClassLabel,feature_list_toDrop)
+
+if __name__ == "__main__":
+    df_DDoS_filtered = dataPreProcessing(fileName,'Label','BENIGN','DDoS',new_ClassLabel,1000)
+    df_full = copy.copy(df_DDoS_filtered)
+    feature_list_toDrop = ['Label','Flow ID','Source IP','Destination IP','Timestamp']
+    trainTestLogisticRegression(df_DDoS_filtered,'Class_Label',feature_list_toDrop)
+    applyCorrelationMatrix(df_full,new_ClassLabel,feature_list_toDrop,0.8)
 
 
