@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov  5 14:37:29 2018
+Created on Mon Dec  5 14:37:29 2018
+@author: ashwinar@bu.edu
 
-@author: ashwinar
-this scripts reads your ticker file (e.g. MSFT.csv) and
-constructs a list of lines
+This is a machine learning algorithm implemenation to detect DDoS attacks based on the sflow data received from the network equipement.
+Various ML algorithms are compared against its accuracy.
+
 """
-
 """
 Ashwin Arunkumar
 Class: CS 677
 Date: 12/12/2023
 Term project 
-Description of Problem (just a 1-2 line summary!): 
+Description of Project (just a 1-2 line summary!):
+
+This is a machine learning algorithm implemenation to detect DDoS attacks based on the sflow data received from the network equipement.
+Various ML algorithms are compared against its accuracy. 
 """
 
 import os
