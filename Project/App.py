@@ -3,7 +3,7 @@
 Created on Mon Dec  5, 2023.
 @author: ashwinar@bu.edu
 
-This is a machine learning algorithm implemenation to detect DDoS attacks based on the sflow data received from the network equipement.
+This is a machine learning algorithm implemenation to detect DDoS attacks based on the sflow data received from the network element.
 Various ML algorithms are compared against its accuracy for accurate prediction of DDoS attacks. The DDos flow is labeled as 1 from the class_label.
 From the confusion matrix, the true positive rate determines the rate of accurate predictions on the DDos attack.
 
@@ -165,7 +165,7 @@ def applyCorrelationMatrix(dataFrame,new_ClassLabel,feature_list_toDrop,threshol
     for col1, col2 in columns_to_drop:
         if col2 in df_full.columns:
             df_full.drop(col2, axis=1, inplace=True)
-    print("\n#### Dropping high positive Correlated features")
+    print("\n%%% Dropping high positive Correlated features")
     accuracy = applyLogisticRegression(df_full,new_ClassLabel,feature_list_toDrop)
     return (accuracy)
 
@@ -188,7 +188,7 @@ def applyNaiveBayes(dataFrame,new_ClassLabel,feature_list_toDrop):
     X = dataFrame.values
 
     #Data set 50/50 split between train and test
-    X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
+    X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=3620)
 
     # Data preprocessing using standard scalar before fitting into KNN model.
     # print(X_test)
@@ -218,7 +218,7 @@ def applyNaiveBayes(dataFrame,new_ClassLabel,feature_list_toDrop):
     # err_rate.append([error_rate*100])
     print("\nTotal features used for training is: ", len(dataFrame.columns))
     print(f"   Total Accuracy of the NB Decision Tree Classifier is: {accuracy * 100 :.2f}%")
-    print("    True Positive Rate is (DDoS prediction accuracy from Naive Bayes) : ", round(TP/(TP+FN),2)*100)
+    print("    True Positive Rate is (Rate of DDoS flows predicted as DDoS by the model) : ", round(TP/(TP+FN),2)*100)
     print("    False Positive Rate is (Rate of Benign flows predicted as DDoS by the model) : ", round(FP/(TP+FN),2)*100)
     return (accuracy*100)
 
@@ -287,8 +287,8 @@ def applyKNN(dataFrame,new_ClassLabel,feature_list_toDrop,neighbor):
         # compare predictions from the KNN model against Y_test output.
         # print("     Accuracy from KNN model for k=" + str(i) + ": "+ f"{accuracy * 100 :.2f}%")
 
-    print("    The best accuracy seen with KNN=" + str(k) +" is ", f"{max(yaxis)}%")
-    print("    True Positive Rate is (DDoS prediction accuracy from KNN model) : ", round(TP/(TP+FN),2)*100)
+    print("    The best accuracy seen with KNN=" + str(k) +" is ", f"{(round(max(yaxis),2))}%")
+    print("    True Positive Rate is (Rate of DDoS flows predicted as DDoS by the model) : ", round(TP/(TP+FN),2)*100)
     print("    False Positive Rate is (Rate of Benign flows predicted as DDoS by the model) : ", round(FP/(TP+FN),2)*100)
     return max(yaxis)
 
@@ -370,8 +370,8 @@ def applyRandomForest(dataFrame,new_ClassLabel,feature_list_toDrop,subtree,max_d
                 d1=d
         #compare predictions from the Randmo forest model against Y_test output.
         # print("     Accuracy from Random Forest model for k=" + str(i) + ": "+ f"{accuracy * 100 :.2f}%")
-    print("    The best accuracy seen with Random Forest using estimator " + str(n1) +" and max depth "+ str(d1) +":" , f"{max(accuracy_list)}%")
-    print("    True Positive Rate is (DDoS prediction accuracy from Random Forest model) : ", round(TP/(TP+FN),2)*100)
+    print("    The best accuracy seen with Random Forest using estimator " + str(n1) +" and max depth "+ str(d1) +":" , f"{(round(max(accuracy_list)*100,2))}%")
+    print("    True Positive Rate is (Rate of DDoS flows predicted as DDoS by the model) : ", round(TP/(TP+FN),2)*100)
     print("    False Positive Rate is (Rate of Benign flows predicted as DDoS by the model) : ", round(FP/(TP+FN),2)*100)
     return (max(accuracy_list)*100)
 
@@ -385,10 +385,14 @@ if __name__ == "__main__":
     feature_list_toDrop = ['Label','Flow ID','Source IP','Destination IP','Timestamp']
 
     # Applying various training models and comparing its accuracy.
+    print("\n#1) Logistic Regression")
     LogRegress_Accuracy = applyLogisticRegression(df_DDoS_filtered,'Class_Label',feature_list_toDrop) #Model logistic regression
     LogRegress_Accuracy_CorrMatrix = applyCorrelationMatrix(df_full_Corr,new_ClassLabel,feature_list_toDrop,0.8) # Apply correlation matrix, remove closest features and compute accuracy of logistic regression.
+    print("\n#2) Naive Bayes")
     NB_Accuracy = applyNaiveBayes(df_full_NB,new_ClassLabel,feature_list_toDrop) # Model Naive bayes
+    print("\n#3) KNN Classifier")
     KNN_Accuracy = applyKNN(df_full_KNN,new_ClassLabel,feature_list_toDrop,10) # Model KNN
+    print("\n#4) Random_Forest")
     RandomForest_Accuracy = applyRandomForest(df_full_RandomForest,new_ClassLabel,feature_list_toDrop,10,6) # Model RandomForest
 
     # plot graph to compare accuracy of various algorithms.
