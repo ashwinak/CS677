@@ -36,8 +36,6 @@ from sklearn.metrics import accuracy_score,confusion_matrix
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
-# from sklearn.preprocessing import PolynomialFeatures
-# from sklearn.preprocessing import FunctionTransformer
 
 
 
