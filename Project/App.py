@@ -3,9 +3,10 @@
 Created on Mon Dec  5, 2023.
 @author: ashwinar@bu.edu
 
-This is a machine learning algorithm implemenation to detect DDoS attacks based on the sflow data received from the network element.
-Various ML algorithms are compared against its accuracy for accurate prediction of DDoS attacks. The DDos flow is labeled as 1 from the class_label.
-From the confusion matrix, the true positive rate determines the rate of accurate predictions on the DDos attack.
+This is a machine learning algorithm implementation to detect DDoS attacks based on the sflow data received from the network element.
+Various ML algorithms are compared against its accuracy for accurate prediction of DDoS attacks. The DDoS flow is labeled as 1 from the class_label.
+From the confusion matrix, the true positive rate determines the rate of accurate predictions on the DDoS traffic.
+A false positive indiates model predicting as DDoS, however it is a BENIGN traffic.
 
 """
 """
