@@ -140,54 +140,112 @@
 # print(y)
 
 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-import csv
-input_dir = os.getcwd()
-clinicalRecords = os.path.join(input_dir,'heart_failure_clinical_records_dataset.csv')
-df_clinicalRecords = pd.read_csv(clinicalRecords)
-required_features = ['creatinine_phosphokinase','platelets','DEATH_EVENT']
-df_clinicalRecords_filtered = df_clinicalRecords.drop(df_clinicalRecords.columns.difference(required_features), axis=1)
-df_0 = df_clinicalRecords_filtered[df_clinicalRecords_filtered['DEATH_EVENT'] == 0]#.values
-df_1 = df_clinicalRecords_filtered[df_clinicalRecords_filtered['DEATH_EVENT'] == 1]#.values
-X = df_0[['creatinine_phosphokinase']] # X is a matrix of 2d array.
-y = df_0[['platelets']] #Y dependent variable can be 1d array.
-title = 'Quadratic Linear Regression for surviving patients'
+# import pandas as pd
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import os
+# import csv
+# input_dir = os.getcwd()
+# clinicalRecords = os.path.join(input_dir,'heart_failure_clinical_records_dataset.csv')
+# df_clinicalRecords = pd.read_csv(clinicalRecords)
+# required_features = ['creatinine_phosphokinase','platelets','DEATH_EVENT']
+# df_clinicalRecords_filtered = df_clinicalRecords.drop(df_clinicalRecords.columns.difference(required_features), axis=1)
+# df_0 = df_clinicalRecords_filtered[df_clinicalRecords_filtered['DEATH_EVENT'] == 0]#.values
+# df_1 = df_clinicalRecords_filtered[df_clinicalRecords_filtered['DEATH_EVENT'] == 1]#.values
+# X = df_0[['creatinine_phosphokinase']] # X is a matrix of 2d array.
+# y = df_0[['platelets']] #Y dependent variable can be 1d array.
+# title = 'Quadratic Linear Regression for surviving patients'
 
 
 # Create a sample DataFrame
 # data = {'X': [1, 2, 3, 4, 5],
 #         'Y': [2, 4, 5, 4, 5]}
 
-X = df_0['creatinine_phosphokinase'].values
-Y = df_0['platelets'].values
-data = {'X': X,
-        'Y': Y}
+# X = df_0['creatinine_phosphokinase'].values
+# Y = df_0['platelets'].values
+# data = {'X': X,
+#         'Y': Y}
+#
+#
+# df = pd.DataFrame(data)
+#
+# # Extract X and Y values
+# x = df['X'].values
+# y = df['Y'].values
+#
+# # Fit a quadratic model (degree=2)
+# coefficients = np.polyfit(x, y, deg=2)
+#
+# # Create a polynomial function using the coefficients
+# poly_func = np.poly1d(coefficients)
+#
+# # Generate points along the curve for smooth visualization
+# x_smooth = np.linspace(x.min(), x.max(), 100)
+# y_smooth = poly_func(x_smooth)
+#
+# # Plot the original data points and the quadratic polynomial curve
+# plt.scatter(x, y, color='black', label='Data Points')
+# plt.plot(x_smooth, y_smooth, color='blue', label='Quadratic Polynomial Curve', linewidth=3)
+# plt.xlabel('X')
+# plt.ylabel('Y')
+# plt.title('Quadratic Polynomial Regression')
+# plt.legend()
+# plt.show()
 
 
-df = pd.DataFrame(data)
 
-# Extract X and Y values
-x = df['X'].values
-y = df['Y'].values
+# from sklearn.metrics import confusion_matrix
+#
+# # Actual values
+# y_true = [0, 1, 0, 1]
+#
+# # Predicted values
+# # 1 is positive
+# # 0 is negative
+# y_pred = [1, 0, 1, 0]
+#
+#
+# # Calculate confusion matrix
+# conf_matrix = confusion_matrix(y_true, y_pred)
+#
+# print("Confusion Matrix:")
+# TN = conf_matrix[[0],[0]][0]
+# FP = conf_matrix[[0],[1]][0]
+# FN = conf_matrix[[1],[0]][0]
+# TP = conf_matrix[[1],[1]][0]
+# print("    True Positive is ", TP)
+# print("    False Positive is ", FP)
+# print("    False Negative is ", FN)
+# print("    True Negative is ", TN)
+# # print("    True Positive Rate is : ", round(TP/(TP+FN),2)*100)
+# # print("    True Negative Rate is : ", round(TN/(TN+FP),2)*100)
+# print(conf_matrix)
+import matplotlib.pyplot as plt
 
-# Fit a quadratic model (degree=2)
-coefficients = np.polyfit(x, y, deg=2)
+# Your data
+x_values = [1, 2, 3, 4, 5]
+y1_values = [10, 15, 25, 30, 35]
+y2_values = [5, 10, 20, 25, 30]
 
-# Create a polynomial function using the coefficients
-poly_func = np.poly1d(coefficients)
+# Create a figure and subplots
+fig, axs = plt.subplots(2, 1, figsize=(8, 6))
 
-# Generate points along the curve for smooth visualization
-x_smooth = np.linspace(x.min(), x.max(), 100)
-y_smooth = poly_func(x_smooth)
+# Plot the first set of data
+axs[0].plot(x_values, y1_values, label='Line 1')
+axs[0].set_xlabel('X-axis Label 1')
+axs[0].set_ylabel('Y-axis Label 1')
+axs[0].set_title('Plot 1')
+axs[0].legend()
 
-# Plot the original data points and the quadratic polynomial curve
-plt.scatter(x, y, color='black', label='Data Points')
-plt.plot(x_smooth, y_smooth, color='blue', label='Quadratic Polynomial Curve', linewidth=3)
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.title('Quadratic Polynomial Regression')
-plt.legend()
+# Plot the second set of data
+axs[1].plot(x_values, y2_values, label='Line 2')
+axs[1].set_xlabel('X-axis Label 2')
+axs[1].set_ylabel('Y-axis Label 2')
+axs[1].set_title('Plot 2')
+axs[1].legend()
+
+# Adjust layout to prevent overlap
+plt.tight_layout()
+
+# Show the plots
 plt.show()
