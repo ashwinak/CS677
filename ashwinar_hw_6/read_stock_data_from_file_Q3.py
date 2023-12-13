@@ -78,6 +78,7 @@ def KMeansClustering():
     plt.scatter(knee_point, distortions[knee_point - 1], color='red', label='Knee Point')
     plt.legend()
     plt.show()
+    plt.savefig("knee_point.pdf")
 
 
 ## This is code for Q3.2
@@ -119,6 +120,8 @@ def bestKMeansClustering():
     plt.ylabel(f'Feature {fj}')
     plt.legend()
     plt.show()
+    plt.savefig("f1vsf2_kneePoint.pdf")
+
 
 
 
