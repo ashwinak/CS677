@@ -64,7 +64,9 @@ def KMeansClustering():
         distortions.append(kmeans.inertia_)
 
     # Find the "knee" or elbow point
-    knee_point = np.argmin(distortions) + 1  # Add 1 because of zero-based indexing
+    # knee_point = np.argmin(distortions) + 1  # Add 1 because of zero-based indexing
+    knee_point = 3 # The elblow/knee point is selected based on the graph.
+
     print(f"Best k using the 'knee' method: {knee_point}")
 
     # Plot the distortion vs. k
@@ -77,7 +79,6 @@ def KMeansClustering():
     plt.legend()
     plt.show()
 
-KMeansClustering()
 
 ## This is code for Q3.2
 def bestKMeansClustering():
@@ -99,9 +100,11 @@ def bestKMeansClustering():
         kmeans.fit(X_scaled)
         distortions.append(kmeans.inertia_)
     # Find the "knee" or elbow point
-    knee_point = np.argmin(distortions) + 1  # Add 1 because of zero-based indexing
+    # knee_point = np.argmin(distortions) + 1  # Add 1 because of zero-based indexing
+    knee_point = 3 # The elblow/knee point is selected based on the graph.
 
-    # Re-run KMeans with the optimal number of clusters
+
+# Re-run KMeans with the optimal number of clusters
     kmeans = KMeans(n_clusters=knee_point, random_state=143)
     kmeans.fit(X_scaled)
 
@@ -117,7 +120,7 @@ def bestKMeansClustering():
     plt.legend()
     plt.show()
 
-bestKMeansClustering()
+
 
 ## This is code for Q3.3
 def clusterLabels():
@@ -132,7 +135,7 @@ def clusterLabels():
     y = df_seedRecords[['class']].values
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-    knee_point = 8
+    knee_point = 3 # The elblow/knee point is selected based on the graph.
     kmeans = KMeans(n_clusters=knee_point, random_state=42)
     kmeans.fit(X_scaled)
 
@@ -155,7 +158,7 @@ def clusterLabels():
     print("\n")
     for cluster in range(knee_point):
         print("cluster " + str(cluster) + ": the cluster label " +  str(cluster_class_label[cluster]) + " its cluster size is " + str(cluster_sizes[cluster]))
-clusterLabels()
+
 
 ## This is code for Q3.4
 
@@ -171,7 +174,8 @@ def KMeansClassifier():
     y = df_seedRecords[['class']].values
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-    knee_point = 8
+    # knee_point = 8
+    knee_point = 3 # The elblow/knee point is selected based on the graph.
     kmeans = KMeans(n_clusters=knee_point, random_state=42)
     kmeans.fit(X_scaled)
 
@@ -197,7 +201,10 @@ def KMeansClassifier():
 
     # Find the largest 3 clusters with labels 1, 2, and 3
     # largest_clusters_indices = np.argsort(cluster_sizes)[-3:]
-    largest_clusters_indices = [6,0,3] # Selected highest size of a cluster per class label i.e. label 1,label 2 and label 3
+    # print("largest_clusters_indices ", largest_clusters_indices)
+    largest_clusters_indices = [2,1,0] # Selected highest size of a cluster per class label i.e. label 1,label 2 and label 3
+    # largest_clusters_indices = [6,0,3] # Selected highest size of a cluster per class label i.e. label 1,label 2 and label 3
+
     clusters_A_B_C = kmeans.cluster_centers_[largest_clusters_indices]
 
     # Assign labels based on the nearest centroid for each data point
@@ -212,7 +219,6 @@ def KMeansClassifier():
     accuracy = accuracy_score(y, closest_cluster_labels)
     print(f"\nAccuracy of Kmeans classifier for label 1,2 and 3 data points is : {accuracy:.2%}")
 
-KMeansClassifier()
 
 ## This is code for Q3.5
 def KMeansClassifierVsSVM():
@@ -231,7 +237,9 @@ def KMeansClassifierVsSVM():
     y = df_seedRecords_filtered[['class']].values
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-    knee_point = 8
+    # knee_point = 8
+    knee_point = 3 # The elblow/knee point is selected based on the graph.
+
     kmeans = KMeans(n_clusters=knee_point, random_state=42)
     kmeans.fit(X_scaled)
 
@@ -257,6 +265,9 @@ def KMeansClassifierVsSVM():
 
     # Find the largest 3 clusters with labels 1, 2, and 3
     largest_clusters_indices = np.argsort(cluster_sizes)[-2:]
+    print(largest_clusters_indices)
+    # largest_clusters_indices = [2,1,0] # Selected highest size of a cluster per class label i.e. label 1,label 2 and label 3
+
     # largest_clusters_indices = [3,7] # Selected highest size of a cluster per class label i.e. label 2 and label 3. Here Label 1 is removed from the original input dataframe.
     clusters_A_B_C = kmeans.cluster_centers_[largest_clusters_indices]
     # Assign labels based on the nearest centroid for each data point
@@ -281,6 +292,11 @@ def KMeansClassifierVsSVM():
     print("    True Negative Rate is : ", round(TN/(TN+FP),2)*100)
     print("    True Positive Rate is : ", round(TP/(TP+FN),2)*100)
 
+
+KMeansClustering()
+bestKMeansClustering()
+clusterLabels()
+KMeansClassifier()
 KMeansClassifierVsSVM()
 
 
