@@ -56,7 +56,9 @@ def dataPreProcessing(fileName,class_feature, class0_Label,class1_Label,new_Clas
     - class0_Label : The values in class features is expected to be in binary. This label maps to one of the binary value.
     - class1_Label : The values in class features is expected to be in binary. This label maps to one of the binary value.
     - new_ClassLabel : This is the new class label computed based on values from class_features column.
-    - sample_count : This is the number of samples that will be filtered and stored in a dataframe. IOW, the number of rows from the input file.
+    - sample_count : This is the number of samples that will be filtered and stored in a dataframe. IOW, the number of rows from the input file used for training.
+
+    Sample function call: df_DDoS_filtered = dataPreProcessing(fileName,'Label','BENIGN','DDoS',new_ClassLabel,2000)
 
     Returns:
     dataframe: This function returns the the data frame post processing.
@@ -68,6 +70,7 @@ def dataPreProcessing(fileName,class_feature, class0_Label,class1_Label,new_Clas
 
     # Removing leading or trailing spaces.
     df_DDoS = df_DDoS.rename(columns=lambda x: x.strip())
+    df_DDoS = df_DDoS.sample(frac=1.0, random_state=42).reset_index(drop=True)
     condition_Benign = df_DDoS[class_feature] == class0_Label
     condition_DDoS  = df_DDoS[class_feature] == class1_Label
     random_rows_class0_Label = df_DDoS[condition_Benign].sample(n=sample_count, random_state=142)
@@ -76,6 +79,7 @@ def dataPreProcessing(fileName,class_feature, class0_Label,class1_Label,new_Clas
 
     # create a new class label for DDOS and Benign flows. Convert text labels to integer labels.
     df_DDoS_filtered[new_ClassLabel] = df_DDoS_filtered[class_feature].apply(lambda x: 0 if x =='BENIGN' else 1)
+    df_DDoS_filtered = df_DDoS_filtered.sample(frac=1.0, random_state=42).reset_index(drop=True) #shuffle rows so that during 50/50 split, the training happens with both type of flows
     df_DDoS_filtered.to_csv('DDOS_Capture_Filtered.csv',index=False)
     # Class_Label = 1 determines if the flow is of type DDoS. This  will translate to True positive value in confusion Matrix.
     return df_DDoS_filtered
@@ -100,7 +104,7 @@ def applyLogisticRegression(dataFrame,new_ClassLabel,feature_list_toDrop):
     X = dataFrame.values
 
     #Data set 50/50 split between train and test
-    X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.5,random_state=120)
+    X_train, X_test, Y_train, Y_test = train_test_split(X,y,test_size=0.2,random_state=120)
 
     # Data preprocessing using standard scalar before fitting into KNN model.
     # print(X_test)
@@ -367,8 +371,44 @@ def applyRandomForest(dataFrame,new_ClassLabel,feature_list_toDrop,subtree,max_d
             if (accuracy) >= max(accuracy_list):
                 n1=n
                 d1=d
-        #compare predictions from the Randmo forest model against Y_test output.
-        # print("     Accuracy from Random Forest model for k=" + str(i) + ": "+ f"{accuracy * 100 :.2f}%")
+    # Run the training again with only the best estimators and max_depth.This time the test and predictions will be saved to CSV for plotting graph to show top n DDOS flows.
+    model = RandomForestClassifier(n_estimators =n1,max_depth =d1,criterion ='entropy')
+    model.fit (X_train, Y_train.ravel())
+    predictions = model.predict(X_test)
+    selected_feature_names = ['Source Port','Destination Port','Protocol','Flow Duration']
+    feature_names = dataFrame.columns
+    # print(feature_names)
+    df_DDoS_prediction = pd.DataFrame(scalar.inverse_transform(X_test), columns=feature_names).filter(items=selected_feature_names)
+    df_DDoS_prediction["predictions"] = predictions
+    condition = df_DDoS_prediction['predictions'] == 1
+    df_DDoS_prediction['srcPort_dstPort_Protocol'] = df_DDoS_prediction.iloc[:, :3].apply(lambda row: '_'.join(map(str, row)), axis=1)
+    df_DDoS_prediction[condition].to_csv('X_test_prediction.csv', index=False)
+    df_DDoS_prediction = df_DDoS_prediction[condition].sort_values(by='Flow Duration', ascending=False)
+    columns_for_graph = ['srcPort_dstPort_Protocol','Flow Duration']
+    df_DDoS_prediction = df_DDoS_prediction[columns_for_graph]
+    df_DDoS_prediction['Flow Duration'] = df_DDoS_prediction['Flow Duration'] / (1000 * 60 * 60)
+    # print(df_DDoS_prediction)
+
+    # # Plot a line graph
+    # df_DDoS_prediction.head(5).plot(x='srcPort_dstPort_Protocol', y='Flow Duration', kind='line', marker='o', linestyle='-')
+    # # Add labels and a title
+    # plt.xlabel('srcPort_dstPort_Protocol')
+    # plt.ylabel('Flow Duration')
+    # plt.title('DDoS flows')
+    # plt.show()
+
+    fig, p0 = plt.subplots(figsize=(25, 6))
+    p0.plot(df_DDoS_prediction.head(10)['srcPort_dstPort_Protocol'], df_DDoS_prediction.head(10)['Flow Duration'], label='DDoS Flows vs Duration')
+    # ax.text(2, 20, 'Text Here', fontsize=12, color='red')
+    p0.set_xlabel('srcPort_dstPort_Protocol', fontsize=12)
+    p0.set_ylabel('Flow Duration(in hrs)', fontsize=12)
+    p0.set_title('Top n DDoS flows', fontsize=14)
+    p0.legend()
+    plt.savefig('DDoS_Flows.pdf')
+    plt.show()
+
+    #compare predictions from the Randmo forest model against Y_test output.
+    # print("     Accuracy from Random Forest model for k=" + str(i) + ": "+ f"{accuracy * 100 :.2f}%")
     print("    The best accuracy seen with Random Forest using estimator " + str(n1) +" and max depth "+ str(d1) +":" , f"{(round(max(accuracy_list)*100,2))}%")
     print("    True Positive Rate is (Rate of DDoS flows predicted as DDoS by the model) : ", round(TP/(TP+FN),2)*100)
     print("    False Positive Rate is (Rate of Benign flows predicted as DDoS by the model) : ", round(FP/(TP+FN),2)*100)
@@ -377,6 +417,7 @@ def applyRandomForest(dataFrame,new_ClassLabel,feature_list_toDrop,subtree,max_d
 
 if __name__ == "__main__":
     df_DDoS_filtered = dataPreProcessing(fileName,'Label','BENIGN','DDoS',new_ClassLabel,2000)
+    # print("df_DDoS_filtered", df_DDoS_filtered.columns)
     df_full_Corr = copy.copy(df_DDoS_filtered)
     df_full_NB = copy.copy(df_DDoS_filtered)
     df_full_KNN = copy.copy(df_DDoS_filtered)
