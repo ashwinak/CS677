@@ -381,6 +381,21 @@ def applyRandomForest(dataFrame,new_ClassLabel,feature_list_toDrop,subtree,max_d
     df_DDoS_prediction = pd.DataFrame(scalar.inverse_transform(X_test), columns=feature_names).filter(items=selected_feature_names)
     df_DDoS_prediction["predictions"] = predictions
     condition = df_DDoS_prediction['predictions'] == 1
+
+    # # Create a heatmap
+    # plt.figure(figsize=(10, 6))
+    # heatmap_data = df_DDoS_prediction.head(10).pivot_table(index='Source Port', columns='Destination Port', values='Flow Duration', fill_value=0)
+    # sns.heatmap(heatmap_data, annot=True, cmap='viridis')
+    # # Add labels and a title
+    # plt.xlabel('Columns')
+    # plt.ylabel('Rows')
+    # plt.title('Heatmap of the DataFrame')
+    # plt.show()
+
+
+
+
+
     df_DDoS_prediction['srcPort_dstPort_Protocol'] = df_DDoS_prediction.iloc[:, :3].apply(lambda row: '_'.join(map(str, row)), axis=1)
     df_DDoS_prediction[condition].to_csv('X_test_prediction.csv', index=False)
     df_DDoS_prediction = df_DDoS_prediction[condition].sort_values(by='Flow Duration', ascending=False)
@@ -389,26 +404,20 @@ def applyRandomForest(dataFrame,new_ClassLabel,feature_list_toDrop,subtree,max_d
     df_DDoS_prediction['Flow Duration'] = df_DDoS_prediction['Flow Duration'] / (1000 * 60 * 60)
     # print(df_DDoS_prediction)
 
-    # # Plot a line graph
-    # df_DDoS_prediction.head(5).plot(x='srcPort_dstPort_Protocol', y='Flow Duration', kind='line', marker='o', linestyle='-')
-    # # Add labels and a title
-    # plt.xlabel('srcPort_dstPort_Protocol')
-    # plt.ylabel('Flow Duration')
-    # plt.title('DDoS flows')
-    # plt.show()
-
-    fig, p0 = plt.subplots(figsize=(25, 6))
-    p0.plot(df_DDoS_prediction.head(10)['srcPort_dstPort_Protocol'], df_DDoS_prediction.head(10)['Flow Duration'], label='DDoS Flows vs Duration')
+    # Create a scatter plot
+    plt.figure(figsize=(34, 6))
+    plt.scatter(df_DDoS_prediction.head(75)['srcPort_dstPort_Protocol'], df_DDoS_prediction.head(75)['Flow Duration'], color='blue', marker='o', label='Data Points')
     # ax.text(2, 20, 'Text Here', fontsize=12, color='red')
-    p0.set_xlabel('srcPort_dstPort_Protocol', fontsize=12)
-    p0.set_ylabel('Flow Duration(in hrs)', fontsize=12)
-    p0.set_title('Top n DDoS flows', fontsize=14)
-    p0.legend()
+    plt.xlabel('srcPort_dstPort_Protocol', fontsize=12)
+    plt.ylabel('Flow Duration(in hrs)', fontsize=12)
+    plt.title('Top 75 DDoS flows', fontsize=14)
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.legend(['DDoS flow info vs flow duration'])
     plt.savefig('DDoS_Flows.pdf')
     plt.show()
 
     #compare predictions from the Randmo forest model against Y_test output.
-    # print("     Accuracy from Random Forest model for k=" + str(i) + ": "+ f"{accuracy * 100 :.2f}%")
     print("    The best accuracy seen with Random Forest using estimator " + str(n1) +" and max depth "+ str(d1) +":" , f"{(round(max(accuracy_list)*100,2))}%")
     print("    True Positive Rate is (Rate of DDoS flows predicted as DDoS by the model) : ", round(TP/(TP+FN),2)*100)
     print("    False Positive Rate is (Rate of Benign flows predicted as DDoS by the model) : ", round(FP/(TP+FN),2)*100)
