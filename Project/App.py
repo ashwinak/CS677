@@ -381,21 +381,6 @@ def applyRandomForest(dataFrame,new_ClassLabel,feature_list_toDrop,subtree,max_d
     df_DDoS_prediction = pd.DataFrame(scalar.inverse_transform(X_test), columns=feature_names).filter(items=selected_feature_names)
     df_DDoS_prediction["predictions"] = predictions
     condition = df_DDoS_prediction['predictions'] == 1
-
-    # # Create a heatmap
-    # plt.figure(figsize=(10, 6))
-    # heatmap_data = df_DDoS_prediction.head(10).pivot_table(index='Source Port', columns='Destination Port', values='Flow Duration', fill_value=0)
-    # sns.heatmap(heatmap_data, annot=True, cmap='viridis')
-    # # Add labels and a title
-    # plt.xlabel('Columns')
-    # plt.ylabel('Rows')
-    # plt.title('Heatmap of the DataFrame')
-    # plt.show()
-
-
-
-
-
     df_DDoS_prediction['srcPort_dstPort_Protocol'] = df_DDoS_prediction.iloc[:, :3].apply(lambda row: '_'.join(map(str, row)), axis=1)
     df_DDoS_prediction[condition].to_csv('X_test_prediction.csv', index=False)
     df_DDoS_prediction = df_DDoS_prediction[condition].sort_values(by='Flow Duration', ascending=False)
